@@ -389,29 +389,30 @@ function setupAuthUI() {
 
         try {
             let error;
+            let response;
             if (isSignUp) {
-                const res = await supabase.auth.signUp({
+                response = await supabase.auth.signUp({
                     email,
                     password,
                     options: { data: { full_name: fullName } }
                 });
-                error = res.error;
+                error = response.error;
             } else {
-                const res = await supabase.auth.signInWithPassword({ email, password });
-                error = res.error;
+                response = await supabase.auth.signInWithPassword({ email, password });
+                error = response.error;
             }
 
             if (error) throw error;
 
             if (isSignUp) {
-                authForm.reset();
                 // Check if Supabase requires email confirmation
-                const session = res?.data?.session;
+                const session = response?.data?.session;
                 if (!session) {
                     errorMsg.textContent = 'Please check your email to confirm your account before logging in!';
                     errorMsg.classList.remove('hidden');
                     return; // Stop here, don't pretend they are logged in
                 }
+                authForm.reset();
                 showToast('Account created! Logging in...', 'success');
             }
 
