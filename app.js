@@ -1257,7 +1257,7 @@ function setupVoiceInput() {
         recognition.maxAlternatives = 1;
         recognition.continuous = false;
         
-        recognition.onresult = (event) => {
+        recognition.onresult = async (event) => {
             let interim = '';
             let final = '';
             for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -1273,8 +1273,9 @@ function setupVoiceInput() {
             transcriptEl.textContent = final || interim;
             
             if (final) {
-                // Parse and show confirmation
-                parsedData = parseVoiceInput(final);
+                statusEl.textContent = 'Parsing with AI...';
+                // Parse via Serverless API and show confirmation
+                parsedData = await parseVoiceInput(final);
                 showConfirmation(final, parsedData);
             }
         };
@@ -1292,12 +1293,13 @@ function setupVoiceInput() {
             }
         };
         
-        recognition.onend = () => {
+        recognition.onend = async () => {
             // If we didn't get a final result and we're still on the listening screen
             if (!confirmEl.classList.contains('hidden')) return;
             const currentText = transcriptEl.textContent.trim();
             if (currentText) {
-                parsedData = parseVoiceInput(currentText);
+                statusEl.textContent = 'Parsing with AI...';
+                parsedData = await parseVoiceInput(currentText);
                 showConfirmation(currentText, parsedData);
             }
         };
@@ -1355,93 +1357,114 @@ function setupVoiceInput() {
         }, 350);
     });
     
-    saveBtn.addEventListener('click', () => {
-        if (!parsedData.amount && !parsedData.description) {
-            showToast('Could not parse transaction. Try again.', 'error');
-            return;
-        }
-        
-        const cat = parsedData.category || 'other';
-        const pay = parsedData.payMethod || 'credit';
-        
-        TRANSACTIONS.unshift({
-            id: TRANSACTIONS.length + 1,
-            name: parsedData.description || 'Voice Transaction',
-            category: cat,
-            payMethod: pay,
-            amount: -(parsedData.amount || 0),
-            time: 'Just now',
-            date: 'Today',
+    saveBtn.addEventListener('click', async () => {
+            if (!parsedData.amount && !parsedData.description) {
+                showToast('Could not parse transaction. Try again.', 'error');
+                return;
+            }
+            
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+            
+            const cat = parsedData.category || 'other';
+            const pay = parsedData.payMethod || 'credit';
+            
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            if (hours > 12) hours -= 12;
+            if (hours === 0) hours = 12;
+            const timeStr = `${hours}:${minutes} ${ampm}`;
+
+            const txData = {
+                amount: parsedData.amount || 0, // AI returns strictly positive/negative
+                description: parsedData.description || 'Voice Transaction',
+                category: cat,
+                pay_method: pay,
+                time: timeStr,
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            const savedDbTx = await saveTransactionToCloud(txData);
+            
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save Transaction';
+            
+            if (savedDbTx) {
+                closeVoiceOverlay();
+                
+                TRANSACTIONS.unshift({
+                    ...savedDbTx,
+                    name: savedDbTx.description,
+                    payMethod: savedDbTx.pay_method
+                });
+                
+                renderTransactions();
+                renderFullTransactions();
+                
+                showToast(`Voice added: ${parsedData.description || 'Transaction'} — $${Math.abs(parsedData.amount || 0).toFixed(2)}`, 'success');
+            }
         });
-        
-        closeVoiceOverlay();
-        renderTransactions();
-        renderFullTransactions();
-        saveTransactionsLocal();
-        const payLabels = { credit: 'Credit Card', debit: 'Debit Card', cash: 'Cash', bank: 'Bank Transfer' };
-        showToast(`Voice added: ${parsedData.description || 'Transaction'} — $${(parsedData.amount || 0).toFixed(2)}`, 'success');
-    });
 }
 
-// ---- Voice Input Parser ----
-function parseVoiceInput(text) {
+// ---- Voice Input Parser (OpenAI Serverless Backend) ----
+async function parseVoiceInput(text) {
+    try {
+        const response = await fetch('/api/parse', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+
+        if (!response.ok) {
+            throw new Error('API routing failed');
+        }
+
+        const data = await response.json();
+        
+        // Return exactly what the AI formatted
+        return {
+            amount: data.amount,
+            description: data.description,
+            category: data.category,
+            payMethod: data.payMethod
+        };
+        
+    } catch (error) {
+        console.error('AI Parse Error, falling back to basic regex parser:', error);
+        return fallbackRegexParser(text);
+    }
+}
+
+// Fallback logic in case Vercel endpoint is unconfigured or unavailable
+function fallbackRegexParser(text) {
     const lower = text.toLowerCase();
     const result = { amount: null, description: '', category: null, payMethod: null };
     
     // 1. Extract amount
     const amountPatterns = [
-        /\$(\d+(?:\.\d{1,2})?)/,                          // $25.50
-        /(\d+(?:\.\d{1,2})?)\s*(?:dollars?|bucks?)/,       // 25 dollars / 25 bucks
-        /(?:spent|paid|cost|for|of)\s*\$?(\d+(?:\.\d{1,2})?)/i,  // spent 25
-        /(\d+(?:\.\d{1,2})?)\s*(?:on|at|to)/,              // 25 on lunch
+        /\$(\d+(?:\.\d{1,2})?)/,                          
+        /(\d+(?:\.\d{1,2})?)\s*(?:dollars?|bucks?)/,       
+        /(?:spent|paid|cost|for|of)\s*\$?(\d+(?:\.\d{1,2})?)/i,  
+        /(\d+(?:\.\d{1,2})?)\s*(?:on|at|to)/,              
     ];
-    
     for (const pattern of amountPatterns) {
         const match = lower.match(pattern);
         if (match) {
-            result.amount = parseFloat(match[1]);
+            result.amount = -parseFloat(match[1]); // Default to expense
             break;
         }
     }
     
-    // 2. Extract payment method
+    // 2. Extract context
     if (/credit\s*card|credit/i.test(lower)) result.payMethod = 'credit';
     else if (/debit\s*card|debit/i.test(lower)) result.payMethod = 'debit';
     else if (/\bcash\b/i.test(lower)) result.payMethod = 'cash';
-    else if (/bank\s*(?:transfer|account)?|wire/i.test(lower)) result.payMethod = 'bank';
-    else result.payMethod = 'credit'; // default
+    else result.payMethod = 'credit';
     
-    // 3. Extract category using the keyword engine
-    let bestCat = null;
-    let bestScore = 0;
-    for (const [catId, keywords] of Object.entries(ICON_KEYWORDS)) {
-        let score = 0;
-        for (const kw of keywords) {
-            if (lower.includes(kw)) {
-                score += kw.length; // Longer keyword matches weighted higher
-            }
-        }
-        if (score > bestScore) {
-            bestScore = score;
-            bestCat = catId;
-        }
-    }
-    result.category = bestCat || 'other';
-    
-    // 4. Extract description (the core of what was said, cleaned up)
-    let desc = text;
-    // Remove amount references
-    desc = desc.replace(/\$\d+(\.\d{1,2})?/g, '');
-    desc = desc.replace(/\d+(\.\d{1,2})?\s*(dollars?|bucks?)/gi, '');
-    // Remove payment method references
-    desc = desc.replace(/\b(with|using|via|by)\s+(credit\s*card|debit\s*card|cash|bank\s*transfer|bank)\b/gi, '');
-    // Remove filler words
-    desc = desc.replace(/\b(spent|paid|i|for|on|at|to|the|a|an|about|around|just|my)\b/gi, '');
-    // Clean up
-    desc = desc.replace(/\s+/g, ' ').trim();
-    // Capitalize first letter
-    if (desc) desc = desc.charAt(0).toUpperCase() + desc.slice(1);
-    result.description = desc || 'Transaction';
+    result.category = 'other';
+    result.description = text.replace(/\$\d+(\.\d{1,2})?/g, '').trim() || 'Transaction';
     
     return result;
 }
