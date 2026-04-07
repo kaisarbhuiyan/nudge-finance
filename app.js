@@ -272,6 +272,15 @@ const scannerPreview = document.getElementById('scanner-preview');
 
 // ---- Initialize ----
 document.addEventListener('DOMContentLoaded', () => {
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => console.log('ServiceWorker registered with scope:', registration.scope))
+                .catch(error => console.log('ServiceWorker registration failed:', error));
+        });
+    }
+
     // Load saved transactions (localStorage for now, Supabase later)
     const savedTx = loadTransactionsLocal();
     if (savedTx && savedTx.length > 0) {
