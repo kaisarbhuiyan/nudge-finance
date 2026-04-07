@@ -377,6 +377,26 @@ function setupModal() {
     modalOverlay?.addEventListener('click', (e) => {
         if (e.target === modalOverlay) closeModal();
     });
+
+    // Handle segmented control toggle
+    const segmentBtns = document.querySelectorAll('.segment-btn');
+    segmentBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const type = e.target.dataset.type;
+            
+            // Only toggle if not already active
+            if (!e.target.classList.contains('active')) {
+                // Remove active class from all
+                segmentBtns.forEach(b => b.classList.remove('active'));
+                
+                // Add to clicked
+                e.target.classList.add('active');
+                
+                // Call openModal with new type to update form state
+                openModal(type);
+            }
+        });
+    });
 }
 function openModal(type = 'expense') {
     currentTxType = typeof type === 'string' ? type : 'expense';
@@ -393,6 +413,16 @@ function openModal(type = 'expense') {
         prefixEl.textContent = currentTxType === 'income' ? '+$' : '-$';
         prefixEl.style.color = currentTxType === 'income' ? 'var(--accent-emerald-light)' : 'var(--text-secondary)';
     }
+
+    // Update segmented control buttons
+    const segmentBtns = document.querySelectorAll('.segment-btn');
+    segmentBtns.forEach(btn => {
+        if (btn.dataset.type === currentTxType) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
 
     modalOverlay?.classList.remove('hidden');
     // Set today's date
