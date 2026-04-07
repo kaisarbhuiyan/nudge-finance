@@ -2,6 +2,36 @@
    NUDGE — App Logic & Interactions
    ============================================ */
 
+// ---- Supabase Configuration ----
+const SUPABASE_URL = 'https://gsieggibnmmafdbuwyms.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzaWVnZ2libm1tYWZkYnV3eW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NzI1MzYsImV4cCI6MjA5MTE0ODUzNn0.Z6OYMsBnkA861PAIyIR_iWQyE-SSAKbWdZ1E88RcxoA';
+
+// Initialize Supabase client (with fallback if CDN hasn't loaded)
+let supabase = null;
+try {
+    if (window.supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase connected');
+    }
+} catch (e) {
+    console.warn('Supabase not available, using localStorage fallback');
+}
+
+// ---- Data Persistence ----
+function saveTransactionsLocal() {
+    try {
+        localStorage.setItem('nudge_transactions', JSON.stringify(TRANSACTIONS));
+    } catch (e) {}
+}
+
+function loadTransactionsLocal() {
+    try {
+        const saved = localStorage.getItem('nudge_transactions');
+        if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return null;
+}
+
 // ---- SVG Icon Map (Comprehensive) ----
 const CATEGORY_ICONS = {
     food:           '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>',
@@ -242,6 +272,13 @@ const scannerPreview = document.getElementById('scanner-preview');
 
 // ---- Initialize ----
 document.addEventListener('DOMContentLoaded', () => {
+    // Load saved transactions (localStorage for now, Supabase later)
+    const savedTx = loadTransactionsLocal();
+    if (savedTx && savedTx.length > 0) {
+        TRANSACTIONS.length = 0;
+        savedTx.forEach(tx => TRANSACTIONS.push(tx));
+    }
+    
     updateStatusTime();
     setInterval(updateStatusTime, 60000);
     updateGreeting();
@@ -833,6 +870,7 @@ function setupFormSubmit() {
             
             renderTransactions();
             renderFullTransactions();
+            saveTransactionsLocal();
             
             // Reset form state
             selectedCategory = 'food';
@@ -1099,6 +1137,7 @@ function setupVoiceInput() {
         closeVoiceOverlay();
         renderTransactions();
         renderFullTransactions();
+        saveTransactionsLocal();
         const payLabels = { credit: 'Credit Card', debit: 'Debit Card', cash: 'Cash', bank: 'Bank Transfer' };
         showToast(`Voice added: ${parsedData.description || 'Transaction'} — $${(parsedData.amount || 0).toFixed(2)}`, 'success');
     });
