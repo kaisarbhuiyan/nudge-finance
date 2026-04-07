@@ -253,6 +253,7 @@ const CHART_DATA = {
 // ---- State ----
 let currentScreen = 'home';
 let selectedCategory = 'food';
+let currentTxType = 'expense';
 let currentPeriod = 'week';
 let isRecurringToggled = false;
 
@@ -344,9 +345,11 @@ function setupNavigation() {
     });
 
     // Quick action buttons
-    document.getElementById('btn-expense')?.addEventListener('click', openModal);
-    document.getElementById('btn-income')?.addEventListener('click', openModal);
-    document.getElementById('btn-scan-receipt')?.addEventListener('click', () => navigateTo('scan'));
+    document.getElementById('btn-expense')?.addEventListener('click', () => openModal('expense'));
+    document.getElementById('btn-income')?.addEventListener('click', () => openModal('income'));
+    document.getElementById('btn-scan-receipt')?.addEventListener('click', () => {
+        navigateTo('scan');
+    });
     document.getElementById('btn-see-all-tx')?.addEventListener('click', () => navigateTo('transactions'));
     document.getElementById('btn-see-all-insights')?.addEventListener('click', () => navigateTo('insights'));
 }
@@ -376,7 +379,15 @@ function setupModal() {
     });
 }
 
-function openModal() {
+function openModal(type = 'expense') {
+    currentTxType = typeof type === 'string' ? type : 'expense';
+    
+    // Update modal title logic
+    const modalTitleEl = document.querySelector('#screen-home .modal-title');
+    if (modalTitleEl) {
+        modalTitleEl.textContent = currentTxType === 'income' ? 'Add Income' : 'Add Transaction';
+    }
+
     modalOverlay?.classList.remove('hidden');
     // Set today's date
     const today = new Date().toISOString().split('T')[0];
@@ -867,12 +878,15 @@ function setupFormSubmit() {
             const payLabels = { credit: 'Credit Card', debit: 'Debit Card', cash: 'Cash', bank: 'Bank Transfer' };
             showToast(`Added: ${desc} — $${parseFloat(amount).toFixed(2)} (${payLabels[selectedPayMethod]})`, 'success');
             
+            const amt = parseFloat(amount);
+            const signedAmount = currentTxType === 'income' ? Math.abs(amt) : -Math.abs(amt);
+
             TRANSACTIONS.unshift({
                 id: TRANSACTIONS.length + 1,
                 name: desc,
                 category: selectedCategory,
                 payMethod: selectedPayMethod,
-                amount: -parseFloat(amount),
+                amount: signedAmount,
                 time: 'Just now',
                 date: 'Today',
             });

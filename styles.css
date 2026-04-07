@@ -417,9 +417,10 @@ input {
     justify-content: space-around;
     margin-top: var(--spacing-lg);
     position: relative;
-    z-index: 1;
+    z-index: 20; /* Increased to ensure buttons are clickable */
     border-top: 1px solid var(--border-subtle);
     padding-top: var(--spacing-md);
+    pointer-events: auto;
 }
 
 .balance-action-btn {
