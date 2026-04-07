@@ -405,6 +405,13 @@ function setupAuthUI() {
 
             if (isSignUp) {
                 authForm.reset();
+                // Check if Supabase requires email confirmation
+                const session = res?.data?.session;
+                if (!session) {
+                    errorMsg.textContent = 'Please check your email to confirm your account before logging in!';
+                    errorMsg.classList.remove('hidden');
+                    return; // Stop here, don't pretend they are logged in
+                }
                 showToast('Account created! Logging in...', 'success');
             }
 
