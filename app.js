@@ -361,15 +361,25 @@ function setupAuthUI() {
     const submitBtn = document.getElementById('btn-auth-submit');
     const errorMsg = document.getElementById('auth-error-message');
     
+    if (!tabs.length || !authForm || !submitBtn || !errorMsg) {
+        console.warn('Auth DOM elements missing, skipping Auth UI setup.');
+        return;
+    }
+    
     let isSignUp = false;
 
     tabs.forEach(tab => {
         tab.addEventListener('click', (e) => {
+            const clickedTab = e.currentTarget;
             tabs.forEach(t => t.classList.remove('active'));
-            e.target.classList.add('active');
-            isSignUp = e.target.dataset.tab === 'signup';
+            clickedTab.classList.add('active');
             
-            nameGroup.style.display = isSignUp ? 'block' : 'none';
+            isSignUp = clickedTab.dataset.tab === 'signup';
+            
+            if (nameGroup) {
+                nameGroup.style.display = isSignUp ? 'block' : 'none';
+            }
+            
             submitBtn.textContent = isSignUp ? 'Create Account' : 'Log In';
             errorMsg.classList.add('hidden');
         });
