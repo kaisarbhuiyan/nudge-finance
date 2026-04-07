@@ -17,11 +17,42 @@ try {
     console.warn('Supabase not available, using localStorage fallback');
 }
 
-// ---- Data Persistence ----
-function saveTransactionsLocal() {
+// ---- Data Persistence & Auth State ----
+let currentUser = null;
+
+async function saveTransactionToCloud(txParams) {
+    if (!supabase || !currentUser) return null;
+    
     try {
-        localStorage.setItem('nudge_transactions', JSON.stringify(TRANSACTIONS));
-    } catch (e) {}
+        const { data, error } = await supabase
+            .from('transactions')
+            .insert([{ ...txParams, user_id: currentUser.id }])
+            .select();
+            
+        if (error) throw error;
+        return data[0];
+    } catch (e) {
+        console.error('Save error:', e);
+        showToast('Error saving to cloud', 'error');
+        return null;
+    }
+}
+
+async function fetchTransactionsFromCloud() {
+    if (!supabase || !currentUser) return [];
+    
+    try {
+        const { data, error } = await supabase
+            .from('transactions')
+            .select('*')
+            .order('created_at', { ascending: false });
+            
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        console.error('Fetch error:', e);
+        return [];
+    }
 }
 
 function loadTransactionsLocal() {
@@ -281,14 +312,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 .catch(error => console.log('ServiceWorker registration failed:', error));
         });
     }
-
-    // Load saved transactions (localStorage for now, Supabase later)
-    const savedTx = loadTransactionsLocal();
-    if (savedTx && savedTx.length > 0) {
-        TRANSACTIONS.length = 0;
-        savedTx.forEach(tx => TRANSACTIONS.push(tx));
+    if (!window.supabase) {
+        console.warn("Supabase not loaded yet.");
     }
     
+    setupAuthUI();
+    
+    if (supabase) {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            handleSessionStatus(session);
+        });
+
+        supabase.auth.onAuthStateChange((_event, session) => {
+            handleSessionStatus(session);
+        });
+    }
+
+    document.getElementById('btn-logout')?.addEventListener('click', async () => {
+        if (supabase) {
+            await supabase.auth.signOut();
+        }
+    });
     updateStatusTime();
     setInterval(updateStatusTime, 60000);
     updateGreeting();
@@ -307,8 +351,113 @@ document.addEventListener('DOMContentLoaded', () => {
     setupScanner();
     setupFormSubmit();
     setupVoiceInput();
-    animateBalanceOnLoad();
 });
+
+// ---- Auth Controller ----
+function setupAuthUI() {
+    const tabs = document.querySelectorAll('.auth-tab');
+    const nameGroup = document.getElementById('name-group');
+    const authForm = document.getElementById('auth-form');
+    const submitBtn = document.getElementById('btn-auth-submit');
+    const errorMsg = document.getElementById('auth-error-message');
+    
+    let isSignUp = false;
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            tabs.forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active');
+            isSignUp = e.target.dataset.tab === 'signup';
+            
+            nameGroup.style.display = isSignUp ? 'block' : 'none';
+            submitBtn.textContent = isSignUp ? 'Create Account' : 'Log In';
+            errorMsg.classList.add('hidden');
+        });
+    });
+
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!supabase) return showToast('Database connection failed', 'error');
+        
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+        const fullName = document.getElementById('auth-name').value;
+        
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Please wait...';
+        errorMsg.classList.add('hidden');
+
+        try {
+            let error;
+            if (isSignUp) {
+                const res = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { full_name: fullName } }
+                });
+                error = res.error;
+            } else {
+                const res = await supabase.auth.signInWithPassword({ email, password });
+                error = res.error;
+            }
+
+            if (error) throw error;
+
+            if (isSignUp) {
+                authForm.reset();
+                showToast('Account created! Logging in...', 'success');
+            }
+
+        } catch (err) {
+            errorMsg.textContent = err.message || 'Authentication failed';
+            errorMsg.classList.remove('hidden');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = isSignUp ? 'Create Account' : 'Log In';
+        }
+    });
+}
+
+function handleSessionStatus(session) {
+    const authScreen = document.getElementById('auth-screen');
+    const mainAppWrapper = document.getElementById('main-app-wrapper');
+
+    if (session && session.user) {
+        // Logged In
+        currentUser = session.user;
+        authScreen.classList.add('hidden');
+        mainAppWrapper.classList.remove('hidden');
+        
+        // Fetch User Data from Cloud
+        initUserData();
+    } else {
+        // Logged Out
+        currentUser = null;
+        authScreen.classList.remove('hidden');
+        mainAppWrapper.classList.add('hidden');
+        TRANSACTIONS.length = 0; // Clear memory
+    }
+}
+
+async function initUserData() {
+    // 1. Fetch cloud transactions
+    const dbTx = await fetchTransactionsFromCloud();
+    if (dbTx && dbTx.length > 0) {
+        TRANSACTIONS.length = 0;
+        dbTx.forEach(tx => TRANSACTIONS.push(tx));
+    }
+    
+    // 2. Set Custom Greeting from Profile if available
+    if (currentUser?.user_metadata?.full_name) {
+        const firstName = currentUser.user_metadata.full_name.split(' ')[0];
+        document.getElementById('greeting-sub').textContent = `Let's track your finances, ${firstName}.`;
+    }
+    
+    // 3. Render everything
+    animateBalanceOnLoad();
+    renderTransactions();
+    renderFullTransactions();
+}
 
 // ---- Status Bar Time ----
 function updateStatusTime() {
@@ -904,45 +1053,70 @@ function simulateScan() {
 
 // ---- Form Submit ----
 function setupFormSubmit() {
-    document.getElementById('add-tx-form')?.addEventListener('submit', (e) => {
+    document.getElementById('add-tx-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const amount = document.getElementById('tx-amount').value;
         const desc = document.getElementById('tx-description').value;
+        const submitBtn = e.target.querySelector('button[type="submit"]') || document.getElementById('btn-save-tx');
         
         if (amount && desc) {
-            closeModal();
-            const payLabels = { credit: 'Credit Card', debit: 'Debit Card', cash: 'Cash', bank: 'Bank Transfer' };
-            showToast(`Added: ${desc} — $${parseFloat(amount).toFixed(2)} (${payLabels[selectedPayMethod]})`, 'success');
-            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
             const amt = parseFloat(amount);
             const signedAmount = currentTxType === 'income' ? Math.abs(amt) : -Math.abs(amt);
+            
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            if (hours > 12) hours -= 12;
+            if (hours === 0) hours = 12;
+            const timeStr = `${hours}:${minutes} ${ampm}`;
 
-            TRANSACTIONS.unshift({
-                id: TRANSACTIONS.length + 1,
-                name: desc,
-                category: selectedCategory,
-                payMethod: selectedPayMethod,
+            const txData = {
                 amount: signedAmount,
-                time: 'Just now',
-                date: 'Today',
-            });
+                description: desc,
+                category: selectedCategory,
+                pay_method: selectedPayMethod,
+                time: timeStr,
+                date: document.getElementById('tx-date').value || new Date().toISOString().split('T')[0]
+            };
+
+            const savedDbTx = await saveTransactionToCloud(txData);
             
-            renderTransactions();
-            renderFullTransactions();
-            saveTransactionsLocal();
-            
-            // Reset form state
-            selectedCategory = 'food';
-            selectedPayMethod = 'credit';
-            const selectedDisplay = document.getElementById('selected-category-display');
-            const clearBtn = document.getElementById('clear-category');
-            if (selectedDisplay) selectedDisplay.classList.add('hidden');
-            if (clearBtn) clearBtn.classList.add('hidden');
-            const catInput = document.getElementById('category-input');
-            if (catInput) catInput.placeholder = 'Type to search or create a category...';
-            document.querySelectorAll('.pay-method-btn').forEach((b, i) => {
-                b.classList.toggle('active', i === 0);
-            });
+            submitBtn.disabled = false;
+            if (submitBtn.id === 'btn-save-tx') submitBtn.textContent = 'Save';
+
+            if (savedDbTx) {
+                closeModal();
+                const payLabels = { credit: 'Credit Card', debit: 'Debit Card', cash: 'Cash', bank: 'Bank Transfer' };
+                showToast(`Added: ${desc} — $${Math.abs(amt).toFixed(2)}`, 'success');
+                
+                // Add to local UI array to reflect immediately
+                TRANSACTIONS.unshift({
+                    ...savedDbTx,
+                    name: savedDbTx.description,
+                    payMethod: savedDbTx.pay_method
+                });
+                
+                renderTransactions();
+                renderFullTransactions();
+                
+                // Reset form state
+                e.target.reset();
+                selectedCategory = 'food';
+                selectedPayMethod = 'credit';
+                const selectedDisplay = document.getElementById('selected-category-display');
+                const clearBtn = document.getElementById('clear-category');
+                if (selectedDisplay) selectedDisplay.classList.add('hidden');
+                if (clearBtn) clearBtn.classList.add('hidden');
+                const catInput = document.getElementById('category-input');
+                if (catInput) catInput.placeholder = 'Type to search or create a category...';
+                document.querySelectorAll('.pay-method-btn').forEach((b, i) => {
+                    b.classList.toggle('active', i === 0);
+                });
+            }
         }
     });
 }
