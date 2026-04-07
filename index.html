@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nudge — Smart Financial Planner</title>
+    <meta name="description" content="Nudge is an AI-powered personal finance app that understands your spending behavior and helps you build better financial habits through proactive, personalized suggestions.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span class="status-time" id="status-time">9:41</span>
+            <div class="status-icons">
+                <svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><path d="M1 4.5C3.5 1.5 7 0 8.5 0s5.5 1.5 8 4.5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M3.5 7C5 5 6.5 4 8.5 4s3.5 1 5 3" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="8.5" cy="10.5" r="1.5"/></svg>
+                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="1" width="3" height="11" rx="0.5" opacity="0.3"/><rect x="4.5" y="4" width="3" height="8" rx="0.5" opacity="0.6"/><rect x="9" y="2" width="3" height="10" rx="0.5" opacity="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.5"/></svg>
+                <div class="battery-icon">
+                    <div class="battery-body"><div class="battery-fill"></div></div>
+                    <div class="battery-tip"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screens Container -->
+        <div id="screens">
+            <!-- HOME SCREEN -->
+            <div class="screen active" id="screen-home">
+                <div class="screen-scroll">
+                    <!-- Header -->
+                    <header class="home-header">
+                        <div class="header-left">
+                            <p class="greeting-sub" id="greeting-sub">Good evening</p>
+                            <h1 class="greeting-name">Alex</h1>
+                        </div>
+                        <div class="header-right">
+                            <button class="icon-btn" id="btn-notifications" aria-label="Notifications">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                                <span class="notification-dot"></span>
+                            </button>
+                            <div class="avatar" id="btn-profile">
+                                <span>A</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    <!-- Balance Card -->
+                    <div class="balance-card" id="balance-card">
+                        <div class="balance-card-bg"></div>
+                        <div class="balance-card-content">
+                            <div class="balance-label">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                                <span>Total Balance</span>
+                            </div>
+                            <div class="balance-amount">
+                                <span class="currency">$</span>
+                                <span class="amount" id="balance-amount">4,280</span>
+                                <span class="cents">.50</span>
+                            </div>
+                            <div class="balance-change positive">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                                <span>+3.8% this month</span>
+                            </div>
+                        </div>
+                        <div class="balance-actions">
+                            <button class="balance-action-btn" id="btn-income">
+                                <div class="action-icon income">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                                </div>
+                                <span>Income</span>
+                            </button>
+                            <button class="balance-action-btn" id="btn-expense">
+                                <div class="action-icon expense">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                                </div>
+                                <span>Expense</span>
+                            </button>
+                            <button class="balance-action-btn" id="btn-scan-receipt">
+                                <div class="action-icon scan">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                </div>
+                                <span>Scan</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Spending Chart Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Spending Overview</h2>
+                            <div class="period-toggle" id="period-toggle">
+                                <button class="period-btn active" data-period="week">Week</button>
+                                <button class="period-btn" data-period="month">Month</button>
+                                <button class="period-btn" data-period="year">Year</button>
+                                <div class="period-indicator"></div>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-total">
+                                <span class="chart-total-label">Total Spent</span>
+                                <span class="chart-total-amount" id="chart-total">$1,247.80</span>
+                            </div>
+                            <canvas id="spending-chart" width="350" height="180"></canvas>
+                            <div class="chart-labels" id="chart-labels">
+                                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Insights -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <span class="ai-sparkle">✦</span> AI Insights
+                            </h2>
+                            <button class="see-all-btn" id="btn-see-all-insights">See All</button>
+                        </div>
+                        <div class="insights-carousel" id="insights-carousel">
+                            <div class="insight-card insight-positive">
+                                <div class="insight-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                                </div>
+                                <div class="insight-content">
+                                    <p class="insight-text">You spent <strong>23% less</strong> on dining out this week compared to last week. Keep it up!</p>
+                                    <span class="insight-time">2 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="insight-card insight-warning">
+                                <div class="insight-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                </div>
+                                <div class="insight-content">
+                                    <p class="insight-text">Your <strong>subscription spending</strong> is trending 15% higher than your monthly average.</p>
+                                    <span class="insight-time">5 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="insight-card insight-tip">
+                                <div class="insight-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                </div>
+                                <div class="insight-content">
+                                    <p class="insight-text">Netflix renewal in <strong>3 days</strong> — $15.99. You have 2 other streaming services active.</p>
+                                    <span class="insight-time">Today</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Categories -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Top Categories</h2>
+                        </div>
+                        <div class="categories-grid">
+                            <div class="category-card" data-category="food">
+                                <div class="category-icon-wrap food">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                                </div>
+                                <span class="category-name">Food & Dining</span>
+                                <span class="category-amount">$342.50</span>
+                                <div class="category-bar"><div class="category-fill food" style="width: 68%"></div></div>
+                            </div>
+                            <div class="category-card" data-category="transport">
+                                <div class="category-icon-wrap transport">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"/><polygon points="12 15 17 21 7 21 12 15"/></svg>
+                                </div>
+                                <span class="category-name">Transport</span>
+                                <span class="category-amount">$198.00</span>
+                                <div class="category-bar"><div class="category-fill transport" style="width: 45%"></div></div>
+                            </div>
+                            <div class="category-card" data-category="shopping">
+                                <div class="category-icon-wrap shopping">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                                </div>
+                                <span class="category-name">Shopping</span>
+                                <span class="category-amount">$267.30</span>
+                                <div class="category-bar"><div class="category-fill shopping" style="width: 56%"></div></div>
+                            </div>
+                            <div class="category-card" data-category="subscriptions">
+                                <div class="category-icon-wrap subs">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                                </div>
+                                <span class="category-name">Subscriptions</span>
+                                <span class="category-amount">$89.97</span>
+                                <div class="category-bar"><div class="category-fill subs" style="width: 22%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Transactions -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Recent Transactions</h2>
+                            <button class="see-all-btn" id="btn-see-all-tx">See All</button>
+                        </div>
+                        <div class="transactions-list" id="transactions-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <div class="bottom-spacer"></div>
+                </div>
+            </div>
+
+            <!-- TRANSACTIONS SCREEN -->
+            <div class="screen" id="screen-transactions">
+                <div class="screen-scroll">
+                    <header class="page-header">
+                        <h1 class="page-title">Transactions</h1>
+                        <button class="icon-btn filter-btn" id="btn-filter">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                        </button>
+                    </header>
+                    <!-- Search -->
+                    <div class="search-bar">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" placeholder="Search transactions..." id="search-transactions">
+                    </div>
+                    <!-- Filter Pills -->
+                    <div class="filter-pills" id="filter-pills">
+                        <button class="filter-pill active" data-filter="all">All</button>
+                        <button class="filter-pill" data-filter="food">Food</button>
+                        <button class="filter-pill" data-filter="groceries">Groceries</button>
+                        <button class="filter-pill" data-filter="transport">Transport</button>
+                        <button class="filter-pill" data-filter="gas">Gas</button>
+                        <button class="filter-pill" data-filter="shopping">Shopping</button>
+                        <button class="filter-pill" data-filter="subscriptions">Subs</button>
+                        <button class="filter-pill" data-filter="mortgage">Mortgage</button>
+                        <button class="filter-pill" data-filter="insurance">Insurance</button>
+                        <button class="filter-pill" data-filter="utilities">Utilities</button>
+                        <button class="filter-pill" data-filter="health">Health</button>
+                        <button class="filter-pill" data-filter="fitness">Fitness</button>
+                        <button class="filter-pill" data-filter="phone">Phone</button>
+                        <button class="filter-pill" data-filter="internet">Internet</button>
+                        <button class="filter-pill" data-filter="income">Income</button>
+                    </div>
+                    <!-- Full Transaction List -->
+                    <div class="tx-date-group">
+                        <span class="tx-date-label">Today</span>
+                    </div>
+                    <div class="full-transactions-list" id="full-transactions-list">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div class="bottom-spacer"></div>
+                </div>
+            </div>
+
+            <!-- SCAN SCREEN -->
+            <div class="screen" id="screen-scan">
+                <div class="screen-scroll">
+                    <header class="page-header">
+                        <h1 class="page-title">AI Receipt Scanner</h1>
+                    </header>
+                    
+                    <div class="scan-container">
+                        <!-- Scanner Preview -->
+                        <div class="scanner-preview" id="scanner-preview">
+                            <div class="scanner-frame">
+                                <div class="corner tl"></div>
+                                <div class="corner tr"></div>
+                                <div class="corner bl"></div>
+                                <div class="corner br"></div>
+                                <div class="scan-line" id="scan-line"></div>
+                            </div>
+                            <div class="scanner-placeholder">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                                <p>Position receipt within frame</p>
+                            </div>
+                        </div>
+
+                        <!-- Scan Actions -->
+                        <div class="scan-actions">
+                            <button class="scan-btn secondary" id="btn-upload-receipt">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                Upload
+                            </button>
+                            <button class="scan-btn primary" id="btn-capture-receipt">
+                                <div class="capture-ring">
+                                    <div class="capture-dot"></div>
+                                </div>
+                            </button>
+                            <button class="scan-btn secondary" id="btn-gallery">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                Gallery
+                            </button>
+                        </div>
+
+                        <!-- Scan Result (hidden by default) -->
+                        <div class="scan-result hidden" id="scan-result">
+                            <div class="scan-result-header">
+                                <div class="scan-success-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                </div>
+                                <h3>Receipt Scanned Successfully</h3>
+                                <p class="scan-confidence">AI Confidence: <span class="confidence-value">97%</span></p>
+                            </div>
+                            <div class="scan-data">
+                                <div class="scan-field">
+                                    <label>Merchant</label>
+                                    <div class="scan-value" id="scan-merchant">Whole Foods Market</div>
+                                </div>
+                                <div class="scan-field">
+                                    <label>Date</label>
+                                    <div class="scan-value" id="scan-date">Apr 6, 2026</div>
+                                </div>
+                                <div class="scan-field">
+                                    <label>Amount</label>
+                                    <div class="scan-value highlight" id="scan-amount">$67.43</div>
+                                </div>
+                                <div class="scan-field">
+                                    <label>Category</label>
+                                    <div class="scan-value">
+                                        <span class="category-tag food">🍕 Food & Groceries</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="scan-actions-bottom">
+                                <button class="btn btn-outline" id="btn-edit-scan">Edit Details</button>
+                                <button class="btn btn-primary" id="btn-save-scan">Save Transaction</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom-spacer"></div>
+                </div>
+            </div>
+
+            <!-- INSIGHTS SCREEN -->
+            <div class="screen" id="screen-insights">
+                <div class="screen-scroll">
+                    <header class="page-header">
+                        <h1 class="page-title"><span class="ai-sparkle">✦</span> AI Insights</h1>
+                    </header>
+
+                    <!-- AI Summary Card -->
+                    <div class="ai-summary-card">
+                        <div class="ai-avatar">
+                            <div class="ai-avatar-ring"></div>
+                            <span class="ai-sparkle-icon">✦</span>
+                        </div>
+                        <h3>Your Weekly Financial Summary</h3>
+                        <p class="ai-summary-text" id="ai-summary-text">
+                            You're doing great this week, Alex! Your spending is <strong>12% below budget</strong>. 
+                            I noticed you've been consistent with meal prep — that's saving you roughly <strong>$45/week</strong> on dining out. 
+                            One thing to watch: your rideshare spending jumped on Thursday.
+                        </p>
+                        <div class="ai-summary-metrics">
+                            <div class="ai-metric">
+                                <span class="ai-metric-value positive">-12%</span>
+                                <span class="ai-metric-label">vs Budget</span>
+                            </div>
+                            <div class="ai-metric">
+                                <span class="ai-metric-value">$182</span>
+                                <span class="ai-metric-label">Saved</span>
+                            </div>
+                            <div class="ai-metric">
+                                <span class="ai-metric-value warning">3</span>
+                                <span class="ai-metric-label">Alerts</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Suggestions -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Today's Suggestions</h2>
+                        </div>
+                        <div class="suggestions-list">
+                            <div class="suggestion-card">
+                                <div class="suggestion-number">1</div>
+                                <div class="suggestion-content">
+                                    <h4>Skip the afternoon coffee run ☕</h4>
+                                    <p>You've spent $23.50 on coffee shops this week. Try brewing at home tomorrow — potential savings: <strong>$5.50</strong></p>
+                                </div>
+                            </div>
+                            <div class="suggestion-card">
+                                <div class="suggestion-number">2</div>
+                                <div class="suggestion-content">
+                                    <h4>Review your streaming services 📺</h4>
+                                    <p>You have 3 active streaming subscriptions totaling <strong>$42.97/mo</strong>. You haven't used Hulu in 23 days.</p>
+                                </div>
+                            </div>
+                            <div class="suggestion-card">
+                                <div class="suggestion-number">3</div>
+                                <div class="suggestion-content">
+                                    <h4>Upcoming: Car Insurance 🚗</h4>
+                                    <p>Your quarterly premium of <strong>$340</strong> is due in 8 days. Make sure you have funds ready.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Spending Anomalies -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Anomaly Detection</h2>
+                        </div>
+                        <div class="anomaly-card">
+                            <div class="anomaly-header">
+                                <span class="anomaly-badge">Unusual</span>
+                                <span class="anomaly-date">April 3, 2026</span>
+                            </div>
+                            <p class="anomaly-text">
+                                A charge of <strong>$189.00</strong> from "CloudTech Services" is significantly higher than your typical tech spending of $30–50/month.
+                            </p>
+                            <div class="anomaly-actions">
+                                <button class="btn btn-sm btn-outline">Mark as Expected</button>
+                                <button class="btn btn-sm btn-ghost">View Details</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predicted Spending -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Spending Forecast</h2>
+                        </div>
+                        <div class="forecast-card">
+                            <div class="forecast-visual">
+                                <canvas id="forecast-chart" width="320" height="120"></canvas>
+                            </div>
+                            <div class="forecast-summary">
+                                <p>Based on your current pace, you'll likely spend <strong>$2,850</strong> this month — that's <strong>$150 under</strong> your $3,000 budget. 🎉</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bottom-spacer"></div>
+                </div>
+            </div>
+
+            <!-- RECURRING SCREEN -->
+            <div class="screen" id="screen-recurring">
+                <div class="screen-scroll">
+                    <header class="page-header">
+                        <h1 class="page-title">Recurring Payments</h1>
+                        <button class="icon-btn" id="btn-add-recurring">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </button>
+                    </header>
+
+                    <!-- Upcoming Summary -->
+                    <div class="recurring-summary">
+                        <div class="recurring-stat">
+                            <span class="recurring-stat-value">$487.96</span>
+                            <span class="recurring-stat-label">Monthly Total</span>
+                        </div>
+                        <div class="recurring-stat">
+                            <span class="recurring-stat-value">8</span>
+                            <span class="recurring-stat-label">Active Subscriptions</span>
+                        </div>
+                        <div class="recurring-stat">
+                            <span class="recurring-stat-value">2</span>
+                            <span class="recurring-stat-label">Due This Week</span>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Upcoming</h2>
+                        </div>
+                        <div class="recurring-list" id="recurring-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <div class="bottom-spacer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Transaction Modal -->
+        <div class="modal-overlay hidden" id="modal-overlay">
+            <div class="modal" id="add-transaction-modal">
+                <div class="modal-handle"></div>
+                <div class="modal-title-row">
+                    <h2 class="modal-title">Add Transaction</h2>
+                    <button type="button" class="voice-input-btn" id="btn-voice-input" title="Voice Input">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        <span>Voice</span>
+                    </button>
+                </div>
+                <form id="add-tx-form">
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <div class="amount-input">
+                            <span class="amount-prefix">$</span>
+                            <input type="number" step="0.01" id="tx-amount" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="tx-description" placeholder="e.g., Lunch at Chipotle" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <div class="smart-category-wrap">
+                            <div class="smart-category-input-row">
+                                <svg class="cat-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                <input type="text" id="category-input" placeholder="Type to search or create a category..." autocomplete="off">
+                            </div>
+                            <div class="selected-category hidden" id="selected-category-display"></div>
+                            <button type="button" class="clear-category-btn hidden" id="clear-category">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                            <div class="category-suggestions hidden" id="category-suggestions"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Method</label>
+                        <div class="pay-method-select">
+                            <button type="button" class="pay-method-btn active" data-method="credit">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                                <span>Credit</span>
+                            </button>
+                            <button type="button" class="pay-method-btn" data-method="debit">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/><path d="M7 15h2"/></svg>
+                                <span>Debit</span>
+                            </button>
+                            <button type="button" class="pay-method-btn" data-method="cash">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                <span>Cash</span>
+                            </button>
+                            <button type="button" class="pay-method-btn" data-method="bank">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                <span>Bank</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="tx-date">
+                    </div>
+                    <div class="form-row">
+                        <label class="toggle-label">
+                            <span>Mark as recurring</span>
+                            <div class="toggle" id="tx-recurring">
+                                <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" id="btn-cancel-tx">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Transaction</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Voice Input Overlay -->
+        <div class="voice-overlay hidden" id="voice-overlay">
+            <div class="voice-overlay-content">
+                <button type="button" class="voice-close-btn" id="voice-close">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+                
+                <!-- Listening State -->
+                <div class="voice-listening" id="voice-listening">
+                    <div class="voice-mic-ring">
+                        <div class="voice-mic-ring-pulse"></div>
+                        <div class="voice-mic-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        </div>
+                    </div>
+                    <p class="voice-status" id="voice-status">Listening...</p>
+                    <p class="voice-hint">Say something like:<br><em>"Spent 25 dollars on lunch at Chipotle with credit card"</em></p>
+                    <div class="voice-transcript" id="voice-transcript"></div>
+                </div>
+                
+                <!-- Confirmation State -->
+                <div class="voice-confirm hidden" id="voice-confirm">
+                    <div class="voice-confirm-header">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        <span>Got it! Please confirm:</span>
+                    </div>
+                    <div class="voice-confirm-card">
+                        <div class="voice-preview-row">
+                            <span class="voice-preview-label">You said:</span>
+                            <p class="voice-preview-transcript" id="voice-final-transcript"></p>
+                        </div>
+                        <div class="voice-preview-details">
+                            <div class="voice-preview-item">
+                                <span class="voice-preview-label">Amount</span>
+                                <span class="voice-preview-value" id="voice-parsed-amount">$0.00</span>
+                            </div>
+                            <div class="voice-preview-item">
+                                <span class="voice-preview-label">Description</span>
+                                <span class="voice-preview-value" id="voice-parsed-desc">—</span>
+                            </div>
+                            <div class="voice-preview-item">
+                                <span class="voice-preview-label">Category</span>
+                                <span class="voice-preview-value" id="voice-parsed-cat">—</span>
+                            </div>
+                            <div class="voice-preview-item">
+                                <span class="voice-preview-label">Payment</span>
+                                <span class="voice-preview-value" id="voice-parsed-pay">—</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="voice-confirm-actions">
+                        <button type="button" class="btn btn-outline" id="voice-retry">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                            Try Again
+                        </button>
+                        <button type="button" class="btn btn-outline" id="voice-edit">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Edit
+                        </button>
+                        <button type="button" class="btn btn-primary" id="voice-confirm-save">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            Confirm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav" id="bottom-nav">
+            <button class="nav-item active" data-screen="home" id="nav-home">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" data-screen="transactions" id="nav-transactions">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                <span>Activity</span>
+            </button>
+            <button class="nav-item nav-add" id="nav-add">
+                <div class="nav-add-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </div>
+            </button>
+            <button class="nav-item" data-screen="insights" id="nav-insights">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                <span>Insights</span>
+            </button>
+            <button class="nav-item" data-screen="recurring" id="nav-recurring">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                <span>Recurring</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
