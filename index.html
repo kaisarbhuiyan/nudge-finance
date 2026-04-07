@@ -18,6 +18,48 @@
 </head>
 <body>
     <div id="app-container">
+        <!-- Auth Screen -->
+        <div class="auth-screen active" id="auth-screen">
+            <div class="auth-bg"></div>
+            <div class="auth-content">
+                <div class="auth-header">
+                    <img src="icon-192.png" alt="Nudge Logo" class="auth-logo">
+                    <h1>Nudge</h1>
+                    <p>Your money, brilliantly simple.</p>
+                </div>
+                
+                <form id="auth-form" class="auth-form">
+                    <div class="auth-tabs">
+                        <button type="button" class="auth-tab active" data-tab="login">Log In</button>
+                        <button type="button" class="auth-tab" data-tab="signup">Sign Up</button>
+                    </div>
+
+                    <div class="form-group" id="name-group" style="display: none;">
+                        <label>Full Name</label>
+                        <input type="text" id="auth-name" placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="auth-email" placeholder="you@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="auth-password" placeholder="••••••••" required autocomplete="current-password">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary auth-submit" id="btn-auth-submit">
+                        Log In
+                    </button>
+                </form>
+                
+                <div class="auth-error hidden" id="auth-error-message"></div>
+            </div>
+        </div>
+
+        <!-- Main App Wrapper (Hidden until logged in) -->
+        <div id="main-app-wrapper" class="hidden">
         <!-- Status Bar -->
         <div class="status-bar">
             <span class="status-time" id="status-time">9:41</span>
@@ -47,7 +89,7 @@
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                                 <span class="notification-dot"></span>
                             </button>
-                            <div class="avatar" id="btn-profile">
+                            <div class="avatar" id="btn-logout" title="Log Out" style="cursor: pointer;">
                                 <span>A</span>
                             </div>
                         </div>
@@ -490,6 +532,12 @@
                     </button>
                 </div>
                 <form id="add-tx-form">
+                    <div class="form-group type-toggle-wrapper">
+                        <div class="segmented-control" id="tx-type-toggle">
+                            <button type="button" class="segment-btn active" data-type="expense">Expense</button>
+                            <button type="button" class="segment-btn" data-type="income">Income</button>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label>Amount</label>
                         <div class="amount-input">
