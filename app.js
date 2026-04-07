@@ -378,7 +378,6 @@ function setupModal() {
         if (e.target === modalOverlay) closeModal();
     });
 }
-
 function openModal(type = 'expense') {
     currentTxType = typeof type === 'string' ? type : 'expense';
     
@@ -386,6 +385,13 @@ function openModal(type = 'expense') {
     const modalTitleEl = document.querySelector('#screen-home .modal-title');
     if (modalTitleEl) {
         modalTitleEl.textContent = currentTxType === 'income' ? 'Add Income' : 'Add Transaction';
+    }
+
+    // Update input prefix visually
+    const prefixEl = document.querySelector('.amount-prefix');
+    if (prefixEl) {
+        prefixEl.textContent = currentTxType === 'income' ? '+$' : '-$';
+        prefixEl.style.color = currentTxType === 'income' ? 'var(--accent-emerald-light)' : 'var(--text-secondary)';
     }
 
     modalOverlay?.classList.remove('hidden');
