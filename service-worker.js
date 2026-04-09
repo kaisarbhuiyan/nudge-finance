@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nudge-finance-v4';
+const CACHE_NAME = 'nudge-finance-v5';
 const urlsToCache = [
   '/',
   '/index.html',

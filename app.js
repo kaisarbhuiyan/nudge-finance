@@ -357,48 +357,51 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupAuthUI() {
     const tabs = document.querySelectorAll('.auth-tab');
     const nameGroup = document.getElementById('name-group');
-    const authForm = document.getElementById('auth-form');
     const submitBtn = document.getElementById('btn-auth-submit');
     const errorMsg = document.getElementById('auth-error-message');
     
-    if (!tabs.length || !authForm || !submitBtn || !errorMsg) {
+    if (!tabs.length || !submitBtn || !errorMsg) {
         console.warn('Auth DOM elements missing, skipping Auth UI setup.');
         return;
     }
     
     let isSignUp = false;
 
+    // Tab switching
     tabs.forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            const clickedTab = e.currentTarget;
+        tab.addEventListener('click', () => {
             tabs.forEach(t => t.classList.remove('active'));
-            clickedTab.classList.add('active');
-            
-            isSignUp = clickedTab.dataset.tab === 'signup';
-            
-            if (nameGroup) {
-                nameGroup.style.display = isSignUp ? 'block' : 'none';
-            }
-            
+            tab.classList.add('active');
+            isSignUp = tab.dataset.tab === 'signup';
+            if (nameGroup) nameGroup.style.display = isSignUp ? 'block' : 'none';
             submitBtn.textContent = isSignUp ? 'Create Account' : 'Log In';
             errorMsg.classList.add('hidden');
         });
     });
 
-    authForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!supabase) return showToast('Database connection failed', 'error');
+    // Submit via button click — no form, no page reload possible
+    submitBtn.addEventListener('click', async () => {
+        if (!supabase) {
+            errorMsg.textContent = 'Database connection failed. Please refresh.';
+            errorMsg.classList.remove('hidden');
+            return;
+        }
         
-        const email = document.getElementById('auth-email').value;
+        const email = document.getElementById('auth-email').value.trim();
         const password = document.getElementById('auth-password').value;
-        const fullName = document.getElementById('auth-name').value;
-        
+        const fullName = document.getElementById('auth-name').value.trim();
+
+        if (!email || !password) {
+            errorMsg.textContent = 'Please enter your email and password.';
+            errorMsg.classList.remove('hidden');
+            return;
+        }
+
         submitBtn.disabled = true;
         submitBtn.textContent = 'Please wait...';
         errorMsg.classList.add('hidden');
 
         try {
-            let error;
             let response;
             if (isSignUp) {
                 response = await supabase.auth.signUp({
@@ -406,28 +409,26 @@ function setupAuthUI() {
                     password,
                     options: { data: { full_name: fullName } }
                 });
-                error = response.error;
             } else {
                 response = await supabase.auth.signInWithPassword({ email, password });
-                error = response.error;
             }
 
+            const { error } = response;
             if (error) throw error;
 
             if (isSignUp) {
-                // Check if Supabase requires email confirmation
                 const session = response?.data?.session;
                 if (!session) {
-                    errorMsg.textContent = 'Please check your email to confirm your account before logging in!';
+                    errorMsg.textContent = '✅ Check your email to confirm your account, then log in!';
                     errorMsg.classList.remove('hidden');
-                    return; // Stop here, don't pretend they are logged in
+                    errorMsg.style.color = 'var(--accent-emerald-light)';
+                    return;
                 }
-                authForm.reset();
-                showToast('Account created! Logging in...', 'success');
+                showToast('Account created! Welcome to Nudge 🎉', 'success');
             }
 
         } catch (err) {
-            errorMsg.textContent = err.message || 'Authentication failed';
+            errorMsg.textContent = err.message || 'Authentication failed. Please try again.';
             errorMsg.classList.remove('hidden');
         } finally {
             submitBtn.disabled = false;

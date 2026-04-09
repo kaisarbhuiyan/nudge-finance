@@ -292,7 +292,7 @@ input {
     font-size: 14px;
 }
 
-.auth-form {
+.auth-card {
     background: rgba(30, 30, 65, 0.4);
     border-radius: var(--radius-xl);
     padding: var(--spacing-xl);
@@ -327,7 +327,7 @@ input {
     border: 1px solid rgba(117, 119, 245, 0.3);
 }
 
-.auth-form .form-group input {
+.auth-card .form-group input {
     background: rgba(10, 10, 30, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 14px 16px;
@@ -337,8 +337,8 @@ input {
     transition: border-color var(--transition-fast);
 }
 
-.auth-form .form-group input:focus {
-    border-color: var(--accent-primary);
+.auth-card .form-group input:focus {
+    border-color: var(--accent-indigo);
 }
 
 .auth-submit {
