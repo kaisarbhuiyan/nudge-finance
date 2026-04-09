@@ -14,19 +14,30 @@ Welcome to **Nudge**, your AI-powered personal financial planner and tracker. Nu
 ## 🌟 Key Features
 
 ### 🎙️ Voice Input Engine
-Log expenses seamlessly using natural language. Just hit the microphone, say *"I spent $15 on Chipotle,"* and Nudge's smart engine will parse the amount, description, and automatically categorize it for you.
+Log expenses seamlessly using natural language processing. Just tap the microphone and say *"I spent $15 on a Chipotle bowl,"* and Nudge's smart engine will parse the amount, description, and automatically categorize the transaction for you.
 
 ### 🧾 AI Receipt Scanner
-Don't want to type? Use the built-in Receipt Scanner. Upload an image or use your camera, and Nudge will extract the merchant, date, amount, and payment method instantly.
+Don't want to manually type out a long grocery bill? Use the built-in AI Receipt Scanner. Upload an image or use your device camera, and Nudge will intelligently extract the merchant name, date, total amount, and payment method instantly.
 
-### 📱 Full PWA Support
-Nudge isn't just a website; it's a Progressive Web App (PWA). Add it to your iOS or Android Home Screen to enjoy a standalone, full-screen native app experience complete with caching for fast load times.
+### 🔒 Secure Supabase Authentication
+Full, robust user authentication powered by Supabase.
+* **Email & Password Sign In/Sign Up:** Securely create an account and log in.
+* **Persistent Sessions:** Your login session is securely maintained across visits, without frustrating page reloads during form submission.
+* **Responsive Auth UI:** Beautifully designed, tab-driven login and registration screens that look perfect on any device size.
 
-### 🏦 Comprehensive Tracking
-From Cash and Bank Transfers to Credit and Debit Cards, track every facet of your cash flow. Intuitive Quick Action buttons let you record positive Incomes and negative Expenses with dedicated visual styling.
+### 📱 Full PWA Support (Native App Experience)
+Nudge isn't just a website; it's a fully functional Progressive Web App (PWA). 
+* Add it to your iOS or Android Home Screen to enjoy a standalone, full-screen native app experience.
+* Built-in service workers ensure ultra-fast load times and offline caching.
 
-### ☁️ Supabase Ready
-The foundation is laid for cloud persistence. Transactions currently survive via `localStorage` caching but the architecture is wired up to easily sync securely with Supabase databases in real-time.
+### 🏦 Comprehensive Transaction Tracking
+Track every facet of your cash flow.
+* **Multi-Modal Flow:** From Cash and Bank Transfers to Credit and Debit Cards.
+* **Income & Expenses:** Intuitive Quick Action buttons let you record positive Incomes (green) and negative Expenses (red) with dedicated visual styling.
+* **Smart Categorization:** Keep your personal ledger organized with automatically assigned categories.
+
+### ☁️ Real-time Cloud Syncing
+The foundation is laid for absolute reliability. While transactions gracefully fallback to `localStorage` caching if offline, the architecture natively syncs with secure Supabase databases in real-time, ensuring your financial data is safely stored in the cloud and accessible across all your devices.
 
 ---
 
